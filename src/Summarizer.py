@@ -5,12 +5,13 @@ sys.stdout = open(sys.stdout.fileno(), mode='w', encoding='utf8', buffering=1)
 
 
 class SummarizerIO:
-    def __init__(self, test_data, model, n, translator=None):
+    def __init__(self, test_data, model, n,translator=None):
         self.data = test_data
         self.model = model
         self.translator = translator
         n = self.n_distribution(n)
         start_n = 0
+        self.summaries=[]
         for i, data in enumerate(self.data):
             self._evaluate(data)
             self._extract_n(n[i], start_n)
@@ -36,30 +37,27 @@ class SummarizerIO:
                 ngram_set.add(tuple(text[i:i + n]))
             return ngram_set
 
-        def _block_tri(c, p):
+        def _block_tri(c, p): #3gram以上の重なりがあると弾かれる
             tri_c = _get_ngrams(3, c.split())
             for s in p:
                 tri_s = _get_ngrams(3, s.split())
                 if len(tri_c.intersection(tri_s)) > 0:
                     return True
             return False
-
-        _pred = []
+        
+        
+        _pred_id = []
         for j in self.selected_ids[:self.str_len]:
-            candidate = self.src_str[j].strip()
-            if not _block_tri(candidate, _pred):
-                _pred.append(candidate)
-            if (len(_pred) == n) or (n==0):
+            _pred_id.append(j)
+            if (len(_pred_id) == n) or (n==0):
                 break
-
+        _pred=[self.src_str[j].strip() for j in sorted(_pred_id)]
         # Translate Summaries to other language
         if self.translator:
             _pred = self.translator.output(_pred)
-
+        
         # Print result
-        for i, pred in enumerate(_pred):
-            sys.stdout.write("[要約文%s] %s \n" % (start_n+i+1, pred))
-            # print("[Summary %s] %s" % (start_n+i+1, pred))
+        self.summaries+=_pred
 
     def _evaluate(self, test_data):
         self.model.eval()
@@ -74,6 +72,7 @@ class SummarizerIO:
             sent_scores = sent_scores + mask.float()
             selected_ids = torch.argsort(-sent_scores, 1)
             selected_ids = selected_ids.cpu().data.numpy()
+        self.sent_scores = sent_scores[0]
         self.selected_ids = selected_ids[0]
         self.src_str = test_data['src_str']
         self.str_len = len(test_data['src_str'])

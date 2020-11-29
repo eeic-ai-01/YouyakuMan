@@ -86,7 +86,7 @@ class Optimizer(object):
                  ):
         self.last_ppl = None
         self.learning_rate = learning_rate
-        print(f'LR is: {self.learning_rate}')
+        print("LR is:",self.learning_rate)
         self.original_lr = learning_rate
         self.max_grad_norm = max_grad_norm
         self.method = method

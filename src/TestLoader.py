@@ -1,16 +1,18 @@
 from transformers import BertTokenizer
 
-from src.LangFactory import LangFactory
+from .LangFactory import LangFactory
 
 
 class TestLoader:
-    def __init__(self, path, super_long, lang, translator=None):
-        self.path = path
+    def __init__(self, rawtexts, super_long, lang, translator=None):
+        #self.path = path
         self.data = []
         self.super_long = super_long
         self.langfac = LangFactory(lang)
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
-        self._load_data()
+        #self._load_data()
+        self.rawtexts = rawtexts
+        self.fname="fname" 
         # If rawdata isnt modelized, use google translation to translate to English
         if self.langfac.stat is 'Invalid':
             self.translator = translator

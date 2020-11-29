@@ -2,8 +2,8 @@ import os
 
 import torch
 
-from src.models.reporter import ReportMgr
-from src.models.stats import Statistics
+from .reporter import ReportMgr
+from .stats import Statistics
 
 
 def build_trainer(args, model, optim):
@@ -110,6 +110,7 @@ class Trainer(object):
             self.optim.step()
 
     def _save(self, step):
+        print("save checkpoint")
         real_model = self.model
 
         model_state_dict = real_model.state_dict()
@@ -123,7 +124,7 @@ class Trainer(object):
             os.mkdir(self.args.save_path)
         torch.save(checkpoint, f'{self.args.save_path}/model_step_{step}.pt')
         torch.save(model_state_dict, f'{self.args.save_path}/cp_step_{step}.pt')
-        torch.save(self.args, f'{self.args.save_path}/opt_{step}.pt')
+        torch.save(self.args, f'{self.args.save_path}/opt_step_{step}.pt')
 
     def _start_report_manager(self, start_time=None):
         if self.report_manager is not None:
